@@ -217,6 +217,94 @@ app.get("/api/test-services", async (req, res) => {
   });
 });
 
+// Test Contentstack blog entries
+app.get("/api/test-contentstack-blogs", async (req, res) => {
+  try {
+    const contentstackService = require("./services/contentstack");
+
+    console.log("Fetching blog entries from Contentstack...");
+
+    // Try to fetch blog posts
+    const blogPosts = await contentstackService.fetchBlogPosts();
+
+    res.json({
+      status: "success",
+      message: "Successfully fetched blog entries from Contentstack",
+      totalEntries: blogPosts.length,
+      entries: blogPosts.map((post) => ({
+        uid: post.uid,
+        title: post.title,
+        url: post.url || post.slug,
+        created_at: post.created_at,
+        updated_at: post.updated_at,
+        locale: post.locale,
+        contentPreview: post.content
+          ? post.content.substring(0, 200) + "..."
+          : "No content",
+        tags: post.tags || [],
+        category: post.category || "Uncategorized",
+      })),
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Contentstack blog fetch failed:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch blog entries from Contentstack",
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
+// Test all Contentstack content
+app.get("/api/test-contentstack-all", async (req, res) => {
+  try {
+    const contentstackService = require("./services/contentstack");
+
+    console.log("Fetching all content from Contentstack...");
+
+    // Get all entries across all content types
+    const allEntries = await contentstackService.getAllEntries();
+
+    // Group by content type
+    const groupedEntries = {};
+    allEntries.forEach((entry) => {
+      const contentType = entry.contentType || "unknown";
+      if (!groupedEntries[contentType]) {
+        groupedEntries[contentType] = [];
+      }
+      groupedEntries[contentType].push({
+        uid: entry.uid,
+        title: entry.title,
+        url: entry.url || entry.slug,
+        locale: entry.locale,
+        created_at: entry.created_at,
+        contentPreview: entry.content
+          ? entry.content.substring(0, 150) + "..."
+          : "No content",
+      });
+    });
+
+    res.json({
+      status: "success",
+      message: "Successfully fetched all content from Contentstack",
+      totalEntries: allEntries.length,
+      contentTypes: Object.keys(groupedEntries),
+      entriesByType: groupedEntries,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Contentstack all content fetch failed:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Failed to fetch content from Contentstack",
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
 // API routes
 app.use("/api/search", searchRoutes);
 app.use("/api/filters", filtersRoutes);
