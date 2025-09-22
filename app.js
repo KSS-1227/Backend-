@@ -105,6 +105,97 @@ app.post("/api/test", (req, res) => {
   });
 });
 
+// Test OpenAI API connection
+app.get("/api/test-openai", async (req, res) => {
+  try {
+    const embeddingsService = require("./services/embeddings");
+
+    console.log("Testing OpenAI API...");
+    const testEmbedding = await embeddingsService.generateEmbedding(
+      "test query"
+    );
+
+    res.json({
+      status: "success",
+      message: "OpenAI API is working!",
+      embeddingLength: testEmbedding.length,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("OpenAI test failed:", error);
+    res.status(500).json({
+      status: "error",
+      message: "OpenAI API failed",
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
+// Test Supabase connection
+app.get("/api/test-supabase", async (req, res) => {
+  try {
+    const supabaseService = require("./services/supabase");
+
+    console.log("Testing Supabase connection...");
+    // Try to get filter options (simple query)
+    const filterOptions = await supabaseService.getFilterOptions();
+
+    res.json({
+      status: "success",
+      message: "Supabase connection is working!",
+      contentTypes: filterOptions.contentTypes?.length || 0,
+      locales: filterOptions.locales?.length || 0,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Supabase test failed:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Supabase connection failed",
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
+// Test both services together
+app.get("/api/test-services", async (req, res) => {
+  const results = {
+    openai: { status: "unknown" },
+    supabase: { status: "unknown" },
+    timestamp: new Date().toISOString(),
+  };
+
+  // Test OpenAI
+  try {
+    const embeddingsService = require("./services/embeddings");
+    await embeddingsService.generateEmbedding("test");
+    results.openai = { status: "success", message: "OpenAI working" };
+  } catch (error) {
+    results.openai = { status: "error", message: error.message };
+  }
+
+  // Test Supabase
+  try {
+    const supabaseService = require("./services/supabase");
+    await supabaseService.getFilterOptions();
+    results.supabase = { status: "success", message: "Supabase working" };
+  } catch (error) {
+    results.supabase = { status: "error", message: error.message };
+  }
+
+  const allWorking =
+    results.openai.status === "success" &&
+    results.supabase.status === "success";
+
+  res.status(allWorking ? 200 : 500).json({
+    status: allWorking ? "success" : "error",
+    message: allWorking ? "All services working!" : "Some services failed",
+    results: results,
+  });
+});
+
 // API routes
 app.use("/api/search", searchRoutes);
 app.use("/api/filters", filtersRoutes);
