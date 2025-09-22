@@ -29,6 +29,16 @@ app.use(
       ? process.env.ALLOWED_ORIGINS.split(",")
       : "*",
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Origin",
+      "X-Requested-With",
+      "Accept",
+    ],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   })
 );
 
