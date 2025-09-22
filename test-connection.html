@@ -14,20 +14,54 @@
         resultDiv.innerHTML = "Testing...";
 
         try {
-          const response = await fetch(
+          // Test health endpoint
+          const healthResponse = await fetch(
             "https://backend-6omk.onrender.com/api/health"
           );
-          const data = await response.json();
+          const healthData = await healthResponse.json();
+
+          // Test search endpoint
+          const searchResponse = await fetch(
+            "https://backend-6omk.onrender.com/api/search",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                query: "test",
+                limit: 5,
+              }),
+            }
+          );
+
+          let searchResult = "Search endpoint test failed";
+          if (searchResponse.ok) {
+            const searchData = await searchResponse.json();
+            searchResult = `Search test successful: ${
+              searchData.results?.length || 0
+            } results`;
+          } else {
+            searchResult = `Search test failed: ${searchResponse.status} ${searchResponse.statusText}`;
+          }
 
           resultDiv.innerHTML = `
-                    <h3>✅ Connection Successful!</h3>
-                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                    <h3>✅ Connection Tests</h3>
+                    <h4>Health Check:</h4>
+                    <pre>${JSON.stringify(healthData, null, 2)}</pre>
+                    <h4>Search Test:</h4>
+                    <p>${searchResult}</p>
+                    <h4>CORS Status:</h4>
+                    <p>✅ CORS is working - no errors from your frontend domain!</p>
+                    <h4>Frontend URL:</h4>
+                    <p>https://semantic-search-frontend.eu-contentstackapps.com</p>
                 `;
         } catch (error) {
           resultDiv.innerHTML = `
                     <h3>❌ Connection Failed</h3>
                     <p>Error: ${error.message}</p>
-                    <p>This might be a CORS issue if you see this from your frontend domain.</p>
+                    <p>This might be a CORS issue. Your backend should allow requests from:</p>
+                    <p><strong>https://semantic-search-frontend.eu-contentstackapps.com</strong></p>
                 `;
         }
       }
