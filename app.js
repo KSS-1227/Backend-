@@ -72,13 +72,15 @@ app.get("/", (req, res) => {
   });
 });
 
-// Health check endpoint
+// Health check endpoint (both /health and /api/health for compatibility)
 app.get("/health", (req, res) => {
   res.json({
     status: "healthy",
     timestamp: new Date().toISOString(),
     environment: config.nodeEnv,
     version: process.env.npm_package_version || "1.0.0",
+    cors: "enabled",
+    allowedOrigins: process.env.ALLOWED_ORIGINS || "*",
   });
 });
 

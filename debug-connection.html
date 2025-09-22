@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Frontend-Backend Connection Debug</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .test-section {
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid #ddd;
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+      .warning {
+        color: orange;
+      }
+      pre {
+        background: #f5f5f5;
+        padding: 10px;
+        overflow-x: auto;
+      }
+      button {
+        padding: 10px 15px;
+        margin: 5px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔍 Frontend-Backend Connection Debugger</h1>
+
+    <div class="test-section">
+      <h3>Step 1: Test Backend Directly</h3>
+      <button onclick="testBackendDirect()">Test Backend Health</button>
+      <div id="backend-result"></div>
+    </div>
+
+    <div class="test-section">
+      <h3>Step 2: Test CORS from Frontend Domain</h3>
+      <button onclick="testCORS()">Test CORS</button>
+      <div id="cors-result"></div>
+    </div>
+
+    <div class="test-section">
+      <h3>Step 3: Test Search API</h3>
+      <button onclick="testSearchAPI()">Test Search Endpoint</button>
+      <div id="search-result"></div>
+    </div>
+
+    <div class="test-section">
+      <h3>Step 4: Environment Check</h3>
+      <button onclick="checkEnvironment()">Check Environment Variables</button>
+      <div id="env-result"></div>
+    </div>
+
+    <div class="test-section">
+      <h3>Step 5: Network Analysis</h3>
+      <button onclick="networkAnalysis()">Analyze Network</button>
+      <div id="network-result"></div>
+    </div>
+
+    <script>
+      const BACKEND_URL = "https://backend-6omk.onrender.com";
+      const FRONTEND_URL =
+        "https://semantic-search-frontend.eu-contentstackapps.com";
+
+      async function testBackendDirect() {
+        const resultDiv = document.getElementById("backend-result");
+        resultDiv.innerHTML = "<p>Testing backend health...</p>";
+
+        try {
+          const response = await fetch(`${BACKEND_URL}/api/health`);
+          const data = await response.json();
+
+          resultDiv.innerHTML = `
+                    <p class="success">✅ Backend is responding!</p>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+        } catch (error) {
+          resultDiv.innerHTML = `
+                    <p class="error">❌ Backend connection failed</p>
+                    <p>Error: ${error.message}</p>
+                `;
+        }
+      }
+
+      async function testCORS() {
+        const resultDiv = document.getElementById("cors-result");
+        resultDiv.innerHTML = "<p>Testing CORS configuration...</p>";
+
+        try {
+          const response = await fetch(`${BACKEND_URL}/api/health`, {
+            method: "GET",
+            headers: {
+              Origin: FRONTEND_URL,
+              "Content-Type": "application/json",
+            },
+          });
+
+          const data = await response.json();
+
+          resultDiv.innerHTML = `
+                    <p class="success">✅ CORS is working correctly!</p>
+                    <p>Response headers:</p>
+                    <pre>Access-Control-Allow-Origin: ${
+                      response.headers.get("Access-Control-Allow-Origin") ||
+                      "Not set"
+                    }</pre>
+                    <pre>Status: ${response.status}</pre>
+                `;
+        } catch (error) {
+          if (error.message.includes("CORS")) {
+            resultDiv.innerHTML = `
+                        <p class="error">❌ CORS Error Detected!</p>
+                        <p>Your backend is not allowing requests from: <strong>${FRONTEND_URL}</strong></p>
+                        <p>Check your ALLOWED_ORIGINS environment variable in Render.</p>
+                    `;
+          } else {
+            resultDiv.innerHTML = `
+                        <p class="error">❌ Network Error</p>
+                        <p>Error: ${error.message}</p>
+                    `;
+          }
+        }
+      }
+
+      async function testSearchAPI() {
+        const resultDiv = document.getElementById("search-result");
+        resultDiv.innerHTML = "<p>Testing search API...</p>";
+
+        try {
+          const response = await fetch(`${BACKEND_URL}/api/search`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Origin: FRONTEND_URL,
+            },
+            body: JSON.stringify({
+              query: "test search",
+              limit: 5,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            resultDiv.innerHTML = `
+                        <p class="success">✅ Search API is working!</p>
+                        <p>Found ${data.results?.length || 0} results</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+          } else {
+            const errorData = await response.text();
+            resultDiv.innerHTML = `
+                        <p class="error">❌ Search API Error</p>
+                        <p>Status: ${response.status}</p>
+                        <p>Response: ${errorData}</p>
+                    `;
+          }
+        } catch (error) {
+          resultDiv.innerHTML = `
+                    <p class="error">❌ Search API failed</p>
+                    <p>Error: ${error.message}</p>
+                `;
+        }
+      }
+
+      function checkEnvironment() {
+        const resultDiv = document.getElementById("env-result");
+
+        resultDiv.innerHTML = `
+                <h4>Expected Configuration:</h4>
+                <p><strong>Frontend URL:</strong> ${FRONTEND_URL}</p>
+                <p><strong>Backend URL:</strong> ${BACKEND_URL}</p>
+                
+                <h4>Required Environment Variables:</h4>
+                <p><strong>Backend (Render):</strong></p>
+                <pre>ALLOWED_ORIGINS=${FRONTEND_URL},http://localhost:3000,http://localhost:5173
+CONTENT_BASE_URL=${FRONTEND_URL}</pre>
+                
+                <p><strong>Frontend (Contentstack Launch):</strong></p>
+                <pre>VITE_API_BASE_URL=${BACKEND_URL}</pre>
+                
+                <p class="warning">⚠️ Make sure these are set exactly as shown above!</p>
+            `;
+      }
+
+      async function networkAnalysis() {
+        const resultDiv = document.getElementById("network-result");
+        resultDiv.innerHTML = "<p>Analyzing network connectivity...</p>";
+
+        const tests = [
+          { name: "Root endpoint", url: `${BACKEND_URL}/` },
+          { name: "Health endpoint", url: `${BACKEND_URL}/api/health` },
+          { name: "Invalid endpoint", url: `${BACKEND_URL}/api/nonexistent` },
+        ];
+
+        let results = "<h4>Network Test Results:</h4>";
+
+        for (const test of tests) {
+          try {
+            const startTime = Date.now();
+            const response = await fetch(test.url);
+            const endTime = Date.now();
+            const responseTime = endTime - startTime;
+
+            results += `
+                        <p><strong>${test.name}:</strong> 
+                        <span class="success">✅ ${response.status}</span> 
+                        (${responseTime}ms)</p>
+                    `;
+          } catch (error) {
+            results += `
+                        <p><strong>${test.name}:</strong> 
+                        <span class="error">❌ ${error.message}</span></p>
+                    `;
+          }
+        }
+
+        resultDiv.innerHTML = results;
+      }
+
+      // Auto-run basic tests on page load
+      window.onload = function () {
+        console.log("🔍 Debug page loaded");
+        console.log("Frontend URL:", FRONTEND_URL);
+        console.log("Backend URL:", BACKEND_URL);
+      };
+    </script>
+  </body>
+</html>
