@@ -22,14 +22,10 @@ app.use(helmet());
 // Compression middleware
 app.use(compression());
 
-// CORS middleware - simplified and stable
+// CORS middleware
 app.use(
   cors({
-    origin: [
-      "https://semantic-search-frontend.eu-contentstackapps.com",
-      "http://localhost:3000",
-      "http://localhost:5173",
-    ],
+    origin: "https://semantic-search-frontend.eu-contentstackapps.com",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: [
@@ -39,7 +35,6 @@ app.use(
       "X-Requested-With",
       "Accept",
     ],
-    optionsSuccessStatus: 204,
   })
 );
 
@@ -83,15 +78,13 @@ app.get("/", (req, res) => {
   });
 });
 
-// Health check endpoint (both /health and /api/health for compatibility)
+// Health check endpoint
 app.get("/health", (req, res) => {
   res.json({
     status: "healthy",
     timestamp: new Date().toISOString(),
-    environment: config.nodeEnv,
-    version: process.env.npm_package_version || "1.0.0",
+    environment: config.nodeEnv || "production",
     cors: "enabled",
-    allowedOrigins: process.env.ALLOWED_ORIGINS || "*",
   });
 });
 
