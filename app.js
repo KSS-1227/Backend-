@@ -54,6 +54,24 @@ app.get("/favicon.ico", (req, res) => {
   res.status(204).end(); // No content response
 });
 
+// Root route - API welcome message
+app.get("/", (req, res) => {
+  res.json({
+    message: "Backend API is running successfully!",
+    status: "active",
+    timestamp: new Date().toISOString(),
+    version: process.env.npm_package_version || "1.0.0",
+    endpoints: {
+      health: "/health",
+      search: "/api/search",
+      filters: "/api/filters",
+      analytics: "/api/analytics",
+      webhooks: "/api/webhook",
+      blogs: "/api/blogs",
+    },
+  });
+});
+
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.json({
