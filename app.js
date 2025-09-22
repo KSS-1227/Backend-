@@ -22,28 +22,14 @@ app.use(helmet());
 // Compression middleware
 app.use(compression());
 
-// CORS middleware with debugging
+// CORS middleware - simplified and stable
 app.use(
   cors({
-    origin: function (origin, callback) {
-      const allowedOrigins = process.env.ALLOWED_ORIGINS
-        ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
-        : ["*"];
-
-      console.log("CORS Request from origin:", origin);
-      console.log("Allowed origins:", allowedOrigins);
-
-      // Allow requests with no origin (mobile apps, curl, etc.)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
-        console.log("CORS: Origin allowed");
-        return callback(null, true);
-      } else {
-        console.log("CORS: Origin blocked");
-        return callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: [
+      "https://semantic-search-frontend.eu-contentstackapps.com",
+      "http://localhost:3000",
+      "http://localhost:5173",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: [
@@ -53,7 +39,6 @@ app.use(
       "X-Requested-With",
       "Accept",
     ],
-    preflightContinue: false,
     optionsSuccessStatus: 204,
   })
 );
