@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Backend Connection Test</title>
+  </head>
+  <body>
+    <h1>Backend Connection Test</h1>
+    <button onclick="testConnection()">Test Backend Connection</button>
+    <div id="result"></div>
+
+    <script>
+      async function testConnection() {
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = "Testing...";
+
+        try {
+          const response = await fetch(
+            "https://backend-6omk.onrender.com/api/health"
+          );
+          const data = await response.json();
+
+          resultDiv.innerHTML = `
+                    <h3>✅ Connection Successful!</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+        } catch (error) {
+          resultDiv.innerHTML = `
+                    <h3>❌ Connection Failed</h3>
+                    <p>Error: ${error.message}</p>
+                    <p>This might be a CORS issue if you see this from your frontend domain.</p>
+                `;
+        }
+      }
+    </script>
+  </body>
+</html>
