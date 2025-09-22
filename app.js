@@ -105,9 +105,24 @@ app.post("/api/test", (req, res) => {
   });
 });
 
-// Test OpenAI API connection
+// Test OpenAI API connection with detailed diagnostics
 app.get("/api/test-openai", async (req, res) => {
   try {
+    // Check API key format first
+    const apiKey = process.env.OPENAI_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({
+        status: "error",
+        message: "OpenAI API key is missing from environment variables",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    console.log("OpenAI API Key format:", apiKey.substring(0, 10) + "...");
+    console.log("API Key length:", apiKey.length);
+    console.log("API Key starts with:", apiKey.substring(0, 8));
+
     const embeddingsService = require("./services/embeddings");
 
     console.log("Testing OpenAI API...");
@@ -119,6 +134,8 @@ app.get("/api/test-openai", async (req, res) => {
       status: "success",
       message: "OpenAI API is working!",
       embeddingLength: testEmbedding.length,
+      keyFormat: apiKey.substring(0, 8) + "...",
+      keyLength: apiKey.length,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
@@ -127,6 +144,10 @@ app.get("/api/test-openai", async (req, res) => {
       status: "error",
       message: "OpenAI API failed",
       error: error.message,
+      errorCode: error.code || "unknown",
+      keyFormat: process.env.OPENAI_API_KEY
+        ? process.env.OPENAI_API_KEY.substring(0, 8) + "..."
+        : "missing",
       timestamp: new Date().toISOString(),
     });
   }
