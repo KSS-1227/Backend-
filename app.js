@@ -46,6 +46,14 @@ if (config.nodeEnv === "development") {
 // Custom request logger
 app.use(logger.requestLogger());
 
+// Serve static files (for favicon and other assets)
+app.use(express.static("public"));
+
+// Favicon handler to prevent 404 errors
+app.get("/favicon.ico", (req, res) => {
+  res.status(204).end(); // No content response
+});
+
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.json({
