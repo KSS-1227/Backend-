@@ -88,6 +88,23 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Simple test endpoints for debugging
+app.get("/api/test", (req, res) => {
+  res.json({
+    message: "API GET is working!",
+    timestamp: new Date().toISOString(),
+    environment: config.nodeEnv || "production",
+  });
+});
+
+app.post("/api/test", (req, res) => {
+  res.json({
+    message: "API POST is working!",
+    body: req.body,
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // API routes
 app.use("/api/search", searchRoutes);
 app.use("/api/filters", filtersRoutes);
