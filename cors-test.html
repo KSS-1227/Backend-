@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CORS Test</title>
+  </head>
+  <body>
+    <h1>CORS Test for Semantic Search</h1>
+    <button onclick="testCORS()">Test CORS</button>
+    <div id="result"></div>
+
+    <script>
+      async function testCORS() {
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = "Testing CORS...";
+
+        try {
+          console.log("Testing from origin:", window.location.origin);
+
+          // Test 1: Simple GET request
+          const response1 = await fetch(
+            "https://backend-6omk.onrender.com/health",
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          const data1 = await response1.json();
+          console.log("Health test result:", data1);
+
+          // Test 2: POST request (like search)
+          const response2 = await fetch(
+            "https://backend-6omk.onrender.com/api/search",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                query: "test",
+                limit: 5,
+              }),
+            }
+          );
+
+          let searchResult = "Search test failed";
+          if (response2.ok) {
+            const data2 = await response2.json();
+            searchResult = `Search successful: ${
+              data2.results?.length || 0
+            } results`;
+          } else {
+            searchResult = `Search failed: ${response2.status} - ${response2.statusText}`;
+          }
+
+          resultDiv.innerHTML = `
+                    <h3>✅ CORS Test Results</h3>
+                    <p><strong>Origin:</strong> ${window.location.origin}</p>
+                    <p><strong>Health Test:</strong> ✅ Success</p>
+                    <p><strong>Search Test:</strong> ${searchResult}</p>
+                    <h4>Health Response:</h4>
+                    <pre>${JSON.stringify(data1, null, 2)}</pre>
+                `;
+        } catch (error) {
+          console.error("CORS test failed:", error);
+          resultDiv.innerHTML = `
+                    <h3>❌ CORS Test Failed</h3>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Origin:</strong> ${window.location.origin}</p>
+                    <p>This indicates a CORS configuration issue.</p>
+                `;
+        }
+      }
+
+      // Auto-run test when page loads
+      window.onload = function () {
+        console.log("Page loaded from:", window.location.origin);
+        console.log("Expected backend:", "https://backend-6omk.onrender.com");
+      };
+    </script>
+  </body>
+</html>

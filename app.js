@@ -22,12 +22,28 @@ app.use(helmet());
 // Compression middleware
 app.use(compression());
 
-// CORS middleware
+// CORS middleware with debugging
 app.use(
   cors({
-    origin: process.env.ALLOWED_ORIGINS
-      ? process.env.ALLOWED_ORIGINS.split(",")
-      : "*",
+    origin: function (origin, callback) {
+      const allowedOrigins = process.env.ALLOWED_ORIGINS
+        ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+        : ["*"];
+
+      console.log("CORS Request from origin:", origin);
+      console.log("Allowed origins:", allowedOrigins);
+
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+        console.log("CORS: Origin allowed");
+        return callback(null, true);
+      } else {
+        console.log("CORS: Origin blocked");
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: [
