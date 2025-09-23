@@ -166,6 +166,13 @@ alter table search_analytics enable row level security;
 create policy "Allow public read access on content_entries" on content_entries
   for select using (true);
 
+-- Allow public insert and update access on content_entries
+create policy "Allow public insert on content_entries" on content_entries
+  for insert with check (true);
+
+create policy "Allow public update on content_entries" on content_entries
+  for update using (true);
+
 create policy "Allow public insert on query_logs" on query_logs
   for insert with check (true);
 

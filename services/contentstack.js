@@ -328,6 +328,7 @@ class ContentstackService {
               query.language(locale);
               query.where("uid", { $in: ids });
               query.includeCount();
+              query.toJSON(); // Add this line for consistency
 
               const result = await query.find();
 
