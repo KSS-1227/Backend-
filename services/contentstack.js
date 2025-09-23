@@ -162,10 +162,8 @@ class ContentstackService {
               );
 
               // Use the correct SDK pattern for fetching entries
-              const query = this.stack
-                .ContentType(contentType)
-                .Query();
-              
+              const query = this.stack.ContentType(contentType).Query();
+
               // Set query parameters
               query.language(locale);
               query.limit(limit);
@@ -263,10 +261,8 @@ class ContentstackService {
                 }
               );
 
-              const query = this.stack
-                .ContentType(contentType)
-                .Query();
-              
+              const query = this.stack.ContentType(contentType).Query();
+
               query.language(locale);
               query.where("uid", { $in: ids });
               query.includeCount();
@@ -343,10 +339,8 @@ class ContentstackService {
                 limit,
               });
 
-              const query = this.stack
-                .ContentType("blog_post")
-                .Query();
-              
+              const query = this.stack.ContentType("blog_post").Query();
+
               query.language(locale);
               query.limit(limit);
               query.includeCount();
