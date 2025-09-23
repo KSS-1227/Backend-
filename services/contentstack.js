@@ -1,4 +1,4 @@
-const contentstack = require("contentstack");
+const Contentstack = require("contentstack");
 const config = require("../utils/config");
 const logger = require("../utils/logger");
 const performanceMonitor = require("../utils/performance");
