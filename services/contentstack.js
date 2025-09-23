@@ -162,7 +162,7 @@ class ContentstackService {
               );
 
               // Use the correct SDK pattern for fetching entries
-              const query = new (this.stack.ContentType(contentType).Query)();
+              const query = this.stack.ContentType(contentType).Query();
 
               // Set query parameters
               query.language(locale);
@@ -581,35 +581,35 @@ class ContentstackService {
   }
 
   /**
-   * Transform Contentstack entry to standard format using content type manager
+   * Transform entry to standard format for search indexing
    */
-  transformEntry(entry, contentType, locale) {
-    // Extract basic fields using content type manager
-    const uid = entry.uid;
-    const title = contentTypeManager.extractTitle(entry, contentType);
-    const snippet = contentTypeManager.extractSnippet(entry, contentType);
-    const url = contentTypeManager.generateUrl(entry, contentType);
-    const updatedAt =
-      entry.updated_at ||
-      entry._metadata?.updated_at ||
-      new Date().toISOString();
+  transformEntry(entry, contentTypeUid, locale) {
+    // Extract content using contentTypeManager
+    const title = contentTypeManager.extractTitle(entry, contentTypeUid);
+    const snippet = contentTypeManager.extractSnippet(entry, contentTypeUid);
+    const tags = contentTypeManager.extractTags(entry, contentTypeUid);
+    const category = contentTypeManager.extractCategory(entry, contentTypeUid);
+    const url = contentTypeManager.generateUrl(entry, contentTypeUid);
 
-    // Extract additional fields using content type manager
-    const tags = contentTypeManager.extractTags(entry, contentType);
-    const category = contentTypeManager.extractCategory(entry, contentType);
+    // Generate embedding text
+    const embeddingText = contentTypeManager.generateEmbeddingText(
+      entry,
+      contentTypeUid
+    );
 
     return {
-      id: `${contentType}_${uid}_${locale}`,
-      uid,
+      id: entry.uid,
+      content_type: contentTypeUid,
       title,
       snippet,
-      url,
-      content_type: contentType,
-      locale,
-      updated_at: updatedAt,
+      content: embeddingText,
       tags,
       category,
-      raw_data: entry, // Keep original data for reference
+      url,
+      locale,
+      published_at: entry.publish_details?.time || entry.created_at,
+      updated_at: entry.updated_at,
+      raw_data: entry, // Keep raw data for reference
     };
   }
 
