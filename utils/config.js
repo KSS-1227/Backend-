@@ -110,7 +110,7 @@ if (missingVars.length > 0) {
     }
   });
 
-  console.error("\n📚 For more help, see the SETUP_GUIDE.md file");
+  console.error("\n📚 For more help, see the README.md file");
   process.exit(1);
 }
 
