@@ -305,6 +305,60 @@ app.get("/api/test-contentstack-all", async (req, res) => {
   }
 });
 
+// Manual sync endpoint for testing
+app.post("/api/sync", async (req, res) => {
+  try {
+    const syncJob = require("./jobs/syncContent");
+
+    // Check if sync is already running
+    const status = syncJob.getStatus();
+    if (status.isRunning) {
+      return res.status(423).json({
+        message: "Sync job already running",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Run sync
+    await syncJob.run();
+
+    res.json({
+      message: "Content sync completed successfully",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Manual sync failed:", error);
+    res.status(500).json({
+      error: "Sync failed",
+      message: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
+// Force sync endpoint to bypass running checks
+app.post("/api/sync/force", async (req, res) => {
+  try {
+    const syncJob = require("./jobs/syncContent");
+
+    // Force run sync (will stop any existing sync)
+    const result = await syncJob.triggerManualSync({ force: true });
+
+    res.json({
+      message: "Content sync forced successfully",
+      result: result,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("Force sync failed:", error);
+    res.status(500).json({
+      error: "Force sync failed",
+      message: error.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
 // API routes
 app.use("/api/search", searchRoutes);
 app.use("/api/filters", filtersRoutes);
