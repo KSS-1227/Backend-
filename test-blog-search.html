@@ -158,6 +158,21 @@
       <!-- Search Functionality -->
       <div class="test-section">
         <h2>🔍 Search Functionality</h2>
+        <div style="margin-bottom: 10px;">
+          <label for="content-type-select">Content Type:</label>
+          <select id="content-type-select" class="search-box" style="width: auto; padding: 5px;">
+            <option value="">All Content Types</option>
+            <option value="blog_post" selected>Blog Post</option>
+            <option value="article">Article</option>
+            <option value="documentation">Documentation</option>
+            <option value="faq">FAQ</option>
+          </select>
+          
+          <label for="locale-select" style="margin-left: 10px;">Locale:</label>
+          <select id="locale-select" class="search-box" style="width: auto; padding: 5px;">
+            <option value="en-us" selected>English (US)</option>
+          </select>
+        </div>
         <input
           type="text"
           id="search-query"
@@ -403,6 +418,9 @@
 
       async function testSearch() {
         const query = document.getElementById("search-query").value;
+        const contentType = document.getElementById("content-type-select").value;
+        const locale = document.getElementById("locale-select").value;
+        
         if (!query.trim()) {
           showError("search-results", "Please enter a search query");
           return;
@@ -410,24 +428,28 @@
 
         showMessage(
           "search-results",
-          `🔄 Searching for "${query}"...`,
+          `🔄 Searching for "${query}"${contentType ? ` in ${contentType}` : ''}...`,
           "loading"
         );
         try {
           const result = await makeRequest(`${API_BASE}/api/search`, {
             method: "POST",
-            body: JSON.stringify({ query }),
+            body: JSON.stringify({ 
+              query,
+              filters: {
+                contentTypes: contentType ? [contentType] : [],
+                locales: locale ? [locale] : []
+              }
+            }),
           });
-
+      
           if (result.results && result.results.length > 0) {
             let html = `<div class="success">✅ Found ${result.results.length} results for "${query}"</div>`;
             result.results.slice(0, 5).forEach((item) => {
               html += `
                             <div class="blog-item">
                                 <div class="blog-title">${item.title}</div>
-                                <div class="blog-meta">Score: ${item.similarity_score?.toFixed(
-                                  3
-                                )} | Type: ${item.content_type}</div>
+                                <div class="blog-meta">Score: ${item.similarity_score?.toFixed(3)} | Type: ${item.content_type}</div>
                                 <div class="blog-content">${item.snippet}</div>
                             </div>
                         `;
@@ -447,6 +469,9 @@
 
       async function testSemanticSearch() {
         const query = document.getElementById("search-query").value;
+        const contentType = document.getElementById("content-type-select").value;
+        const locale = document.getElementById("locale-select").value;
+        
         if (!query.trim()) {
           showError("search-results", "Please enter a search query");
           return;
@@ -454,7 +479,7 @@
 
         showMessage(
           "search-results",
-          `🔄 Performing semantic search for "${query}"...`,
+          `🔄 Performing semantic search for "${query}"${contentType ? ` in ${contentType}` : ''}...`,
           "loading"
         );
         try {
@@ -464,9 +489,13 @@
               query,
               searchType: "semantic",
               limit: 10,
+              filters: {
+                contentTypes: contentType ? [contentType] : [],
+                locales: locale ? [locale] : []
+              }
             }),
           });
-
+      
           if (result.results && result.results.length > 0) {
             let html = `<div class="success">✅ Semantic search found ${result.results.length} results</div>`;
             result.results.forEach((item) => {
