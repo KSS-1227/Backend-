@@ -1,4 +1,4 @@
-const Contentstack = require("contentstack");
+const contentstack = require("contentstack");
 const config = require("../utils/config");
 const logger = require("../utils/logger");
 const performanceMonitor = require("../utils/performance");
@@ -162,7 +162,7 @@ class ContentstackService {
               );
 
               // Use the correct SDK pattern for fetching entries
-              const query = this.stack.ContentType(contentType).Query();
+              const query = new (this.stack.ContentType(contentType).Query)();
 
               // Set query parameters
               query.language(locale);
@@ -261,7 +261,7 @@ class ContentstackService {
                 }
               );
 
-              const query = this.stack.ContentType(contentType).Query();
+              const query = new (this.stack.ContentType(contentType).Query)();
 
               query.language(locale);
               query.where("uid", { $in: ids });

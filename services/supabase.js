@@ -89,8 +89,9 @@ class SupabaseService {
         query_embedding: queryEmbedding,
         match_threshold: threshold,
         match_count: limit,
-        filter_content_types: filters.contentTypes || null,
-        filter_locales: filters.locales || null,
+        filter_content_types: filters.contentTypes || [],
+        filter_locales: filters.locales || [],
+        date_range: filters.dateRange || "all",
       });
 
       if (error) {

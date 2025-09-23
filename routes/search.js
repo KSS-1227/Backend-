@@ -86,6 +86,7 @@ router.post("/", async (req, res) => {
         url: result.url,
         contentType: result.content_type,
         locale: result.locale,
+        updatedAt: result.updated_at,
         similarity: Math.round(result.similarity * 10000) / 10000, // Round to 4 decimal places
       })),
       meta: {
@@ -204,10 +205,15 @@ router.post("/explain", async (req, res) => {
       });
     }
 
-    logger.debug(`Generating explanations for ${results.length} search results`);
+    logger.debug(
+      `Generating explanations for ${results.length} search results`
+    );
 
     const startTime = Date.now();
-    const explanations = await explainabilityService.explainSearchResults(query, results);
+    const explanations = await explainabilityService.explainSearchResults(
+      query,
+      results
+    );
     const responseTime = Date.now() - startTime;
 
     logger.debug(`Generated explanations in ${responseTime}ms`);
@@ -225,7 +231,10 @@ router.post("/explain", async (req, res) => {
     logger.error("Explanation generation failed:", error);
     res.status(500).json({
       error: "Failed to generate explanations",
-      message: config.nodeEnv === "development" ? error.message : "Internal server error",
+      message:
+        config.nodeEnv === "development"
+          ? error.message
+          : "Internal server error",
       timestamp: new Date().toISOString(),
     });
   }
@@ -249,7 +258,10 @@ router.post("/suggestions", async (req, res) => {
     logger.debug(`Generating search suggestions for query: ${query}`);
 
     const startTime = Date.now();
-    const suggestions = await explainabilityService.generateSearchSuggestions(query, results);
+    const suggestions = await explainabilityService.generateSearchSuggestions(
+      query,
+      results
+    );
     const responseTime = Date.now() - startTime;
 
     res.json({
@@ -265,7 +277,10 @@ router.post("/suggestions", async (req, res) => {
     logger.error("Search suggestions generation failed:", error);
     res.status(500).json({
       error: "Failed to generate search suggestions",
-      message: config.nodeEnv === "development" ? error.message : "Internal server error",
+      message:
+        config.nodeEnv === "development"
+          ? error.message
+          : "Internal server error",
       timestamp: new Date().toISOString(),
     });
   }
